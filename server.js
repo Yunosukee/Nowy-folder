@@ -43,8 +43,9 @@ function getLotteryPath(lotteryId) {
 }
 
 function saveLottery(lotteryId, data) {
+  const filePath = getLotteryPath(lotteryId);
   const json = JSON.stringify(data, null, 2);
-  fs.writeFileSync(getLotteryPath(lotteryId), json, 'utf8');
+  fs.writeFileSync(filePath, json, 'utf8');
 }
 
 function loadLottery(lotteryId) {

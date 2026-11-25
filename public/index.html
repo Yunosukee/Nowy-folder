@@ -700,24 +700,32 @@
     
     async function performReveal() {
       try {
+        console.log('🎲 Clicking reveal button for lotteryId:', currentLotteryId, 'token:', currentUserToken);
+        
         const res = await fetch(`${API_BASE}/api/lottery/${currentLotteryId}/reveal`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: currentUserToken })
         });
         
+        console.log('📡 Reveal response status:', res.status);
+        
         if (!res.ok) {
           const data = await res.json();
+          console.error('❌ Reveal failed:', data);
           throw new Error(data.error);
         }
         
         const data = await res.json();
+        console.log('✅ Reveal success:', data);
+        
         document.getElementById('giftName').textContent = data.receiver;
         document.getElementById('revealStatus').innerHTML = '';
         
         document.getElementById('revealForm').style.display = 'none';
         document.getElementById('revealCard').style.display = 'block';
       } catch (err) {
+        console.error('❌ Error in performReveal:', err);
         showError('reveal', err.message);
       }
     }
