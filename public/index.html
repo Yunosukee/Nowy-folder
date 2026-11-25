@@ -678,6 +678,10 @@
           document.getElementById('revealStatus').innerHTML = '';
           document.getElementById('revealForm').style.display = 'none';
           document.getElementById('revealCard').style.display = 'block';
+        } else {
+          // Show form for first reveal
+          document.getElementById('revealForm').style.display = 'block';
+          document.getElementById('revealCard').style.display = 'none';
         }
       } catch (err) {
         showError('reveal', 'Błąd ładowania loterii');
