@@ -11,7 +11,7 @@ Lekka, responsywna aplikacja do losowania prezentów na Święta z obsługą cza
 ✅ **Zapobieganie duplikatom** - Każda osoba może wylosować tylko raz  
 ✅ **Trwały zapis** - Wyniki są zapisywane w plikach JSON  
 ✅ **Responsywny design** - Działa na komórkach i desktopach  
-✅ **Docker ready** - Gotowy do deployment'u
+✅ **Docker ready** - Gotowy do deployment'u  
 
 ## Nowe funkcje v2
 
@@ -40,11 +40,62 @@ npm start
 http://localhost:3000
 ```
 
+## Deployment z Dockerem
+
+### Opcja 1: Docker Compose (Najłatwiej)
+
+```bash
+# Z lokalnego kodu
+docker-compose -f docker-compose.prod.yml up -d
+
+# Aplikacja dostępna na http://your-server-ip:3000
+```
+
+### Opcja 2: Docker Build & Run
+
+```bash
+# Build image
+docker build -f Dockerfile.prod -t gift-lottery:latest .
+
+# Run container
+docker run -d \
+  -p 3000:3000 \
+  -v lottery-data:/app/data \
+  --name gift-lottery \
+  gift-lottery:latest
+```
+
+### Opcja 3: Deployment z Githuba
+
+```bash
+# Klonuj repo
+git clone https://github.com/yourusername/gift-lottery.git
+cd gift-lottery
+
+# Build i uruchom
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+### Zmiana portu
+
+Domyślnie aplikacja słucha na porcie 3000. Aby zmienić:
+
+**Docker Compose** - edytuj `docker-compose.prod.yml`:
+```yaml
+ports:
+  - "8080:3000"  # Zmieniaj lewy port
+```
+
+**Docker run**:
+```bash
+docker run -d -p 8080:3000 ... gift-lottery:latest
+```
+
 ## Jak używać
 
 ### Tworzenie loterii
 
-1. Wejdź na stronę główną `http://localhost:3000`
+1. Wejdź na stronę główną
 2. Wpisz imiona uczestników (każde w nowej linii):
    ```
    Mama
@@ -262,4 +313,3 @@ MIT
 - 📊 Eksport wyników do PDF/Excel
 
 Zabawy! 🎉
-

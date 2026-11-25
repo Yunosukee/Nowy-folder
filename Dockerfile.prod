@@ -1,0 +1,32 @@
+# Production Dockerfile - builds from git repository
+# Usage: docker build -f Dockerfile.prod -t gift-lottery:prod .
+# Or to build from git directly:
+# docker build -f Dockerfile.prod -t gift-lottery:prod \
+#   --build-arg GIT_REPO=https://github.com/yourusername/gift-lottery.git \
+#   https://github.com/yourusername/gift-lottery.git#main
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install git if building from git URL
+ARG GIT_REPO=
+RUN if [ -n "$GIT_REPO" ]; then \
+    apk add --no-cache git && \
+    git clone $GIT_REPO . && \
+    apk del git; \
+  fi
+
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
+# Create data directory for persistent storage
+RUN mkdir -p /app/data
+
+EXPOSE 3000
+
+ENV NODE_ENV=production
+
+CMD ["npm", "start"]

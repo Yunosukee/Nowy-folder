@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  gift-lottery:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3000:3000"
+    volumes:
+      - lottery-data:/app/data
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
+    # Optional: set domain name for links
+    # environment:
+    #   DOMAIN: example.com
+
+volumes:
+  lottery-data:
+    driver: local
