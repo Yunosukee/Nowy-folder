@@ -666,8 +666,10 @@
       
       try {
         // Check if already revealed
-        const checkUrl = `${API_BASE}/api/lottery/${lotteryId}/check/${token}`;
-        const checkRes = await fetch(checkUrl);
+        const checkUrl = `${API_BASE}/api/lottery/${lotteryId}/check/${token}?_=${Date.now()}`;
+        const checkRes = await fetch(checkUrl, {
+          cache: 'no-store'
+        });
         
         if (!checkRes.ok) {
           showError('reveal', 'Nieprawidłowy link do loterii!');
@@ -724,6 +726,13 @@
         
         document.getElementById('revealForm').style.display = 'none';
         document.getElementById('revealCard').style.display = 'block';
+        
+        // Verify state was saved by checking again
+        console.log('🔄 Verifying state was saved...');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        const checkRes = await fetch(`${API_BASE}/api/lottery/${currentLotteryId}/check/${currentUserToken}`);
+        const checkData = await checkRes.json();
+        console.log('✅ Verified state:', checkData);
       } catch (err) {
         console.error('❌ Error in performReveal:', err);
         showError('reveal', err.message);
