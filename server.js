@@ -203,6 +203,37 @@ app.get('/api/lottery/:id/admin', (req, res) => {
   });
 });
 
+// GET: Check if participant already revealed (shows result if already revealed)
+app.get('/api/lottery/:id/check/:token', (req, res) => {
+  const { token } = req.params;
+  const lottery = loadLottery(req.params.id);
+  
+  if (!lottery) {
+    return res.status(404).json({ error: 'Lottery not found' });
+  }
+  
+  // Find participant by token
+  let participant = null;
+  for (const [name, info] of Object.entries(lottery.participantMap)) {
+    if (info.token === token) {
+      participant = name;
+      break;
+    }
+  }
+  
+  if (!participant) {
+    return res.status(400).json({ error: 'Invalid token' });
+  }
+  
+  const isRevealed = lottery.participantMap[participant].revealed;
+  const receiver = lottery.assignments[participant];
+  
+  res.json({
+    already_revealed: isRevealed,
+    receiver: isRevealed ? receiver : null
+  });
+});
+
 // POST: Reveal gift for participant (with token)
 app.post('/api/lottery/:id/reveal', (req, res) => {
   const { token } = req.body;
@@ -225,8 +256,15 @@ app.post('/api/lottery/:id/reveal', (req, res) => {
     return res.status(400).json({ error: 'Invalid token' });
   }
   
+  // Allow to get result if already revealed
   if (lottery.participantMap[participant].revealed) {
-    return res.status(400).json({ error: 'Already revealed' });
+    const receiver = lottery.assignments[participant];
+    const remaining = lottery.participants.filter(p => !lottery.participantMap[p].revealed).length;
+    return res.json({
+      receiver,
+      remaining,
+      already_revealed: true
+    });
   }
   
   lottery.participantMap[participant].revealed = true;
@@ -244,9 +282,9 @@ app.post('/api/lottery/:id/reveal', (req, res) => {
   saveLottery(req.params.id, lottery);
   
   res.json({ 
-    giver: participant,
     receiver,
-    remaining
+    remaining,
+    already_revealed: false
   });
 });
 

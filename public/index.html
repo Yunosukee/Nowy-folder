@@ -567,7 +567,11 @@
       if (!lotteryId || !adminToken) return;
       
       try {
-        const res = await fetch(`${API_BASE}/api/lottery/${lotteryId}/admin?token=${adminToken}`);
+        // Add cache-buster to prevent stale data
+        const cacheBuster = Date.now();
+        const res = await fetch(`${API_BASE}/api/lottery/${lotteryId}/admin?token=${adminToken}&_=${cacheBuster}`, {
+          cache: 'no-store'
+        });
         
         if (!res.ok) {
           if (res.status === 403) {
@@ -657,22 +661,23 @@
       currentUserToken = token;
       
       try {
-        const res = await fetch(`${API_BASE}/api/lottery/${lotteryId}/participant/${token}`);
+        // Check if already revealed
+        const checkRes = await fetch(`${API_BASE}/api/lottery/${lotteryId}/check/${token}`);
         
-        if (!res.ok) {
+        if (!checkRes.ok) {
           showError('reveal', 'Nieprawidłowy link do loterii!');
           return;
         }
         
-        const data = await res.json();
+        const checkData = await checkRes.json();
         
         showSection('reveal');
         
         // If already revealed, show the result immediately
-        if (data.already_revealed) {
-          document.getElementById('giftName').textContent = data.receiver;
-          document.getElementById('revealStatus').textContent = 
-            `Już wylosowałeś! Czeka na Ciebie: <strong>${data.receiver}</strong>`;
+        if (checkData.already_revealed) {
+          document.getElementById('giftName').textContent = checkData.receiver;
+          document.getElementById('revealStatus').innerHTML = 
+            `Już wylosowałeś! Czeka na Ciebie: <strong>${checkData.receiver}</strong>`;
           document.getElementById('revealForm').style.display = 'none';
           document.getElementById('revealCard').style.display = 'block';
         }
@@ -696,8 +701,8 @@
         
         const data = await res.json();
         document.getElementById('giftName').textContent = data.receiver;
-        document.getElementById('revealStatus').textContent = 
-          `Jeszcze <strong>${data.remaining}</strong> osób czeka na swoją kolej! 🎊`;
+        document.getElementById('revealStatus').innerHTML = 
+          `Kupujesz prezent dla: <strong>${data.receiver}</strong><br><br>Jeszcze <strong>${data.remaining}</strong> osób czeka na swoją kolej! 🎊`;
         
         document.getElementById('revealForm').style.display = 'none';
         document.getElementById('revealCard').style.display = 'block';
