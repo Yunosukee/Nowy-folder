@@ -441,6 +441,11 @@
     <!-- Reveal Section -->
     <div id="reveal" class="section">
       <div class="card">
+        <div id="revealHeader" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px; margin-bottom: 20px; display: none;">
+          <div style="font-size: 0.9em; opacity: 0.9;">Witaj</div>
+          <div style="font-size: 1.8em; font-weight: bold;" id="participantName"></div>
+        </div>
+        
         <h1>🎁</h1>
         <h2 style="border: none; text-align: center; padding: 0; margin: 0 0 20px 0;">Wylosuj Prezent</h2>
         
@@ -671,6 +676,10 @@
         const checkData = await checkRes.json();
         
         showSection('reveal');
+        
+        // Show participant name on top
+        document.getElementById('participantName').textContent = checkData.name;
+        document.getElementById('revealHeader').style.display = 'block';
         
         // If already revealed, show the result immediately without form
         if (checkData.already_revealed) {

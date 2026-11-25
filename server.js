@@ -237,6 +237,7 @@ app.get('/api/lottery/:id/check/:token', (req, res) => {
   const receiver = lottery.assignments[participant];
   
   res.json({
+    name: participant,
     already_revealed: isRevealed,
     receiver: isRevealed ? receiver : null
   });
