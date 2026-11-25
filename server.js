@@ -6,6 +6,13 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
+
+// UTF-8 encoding middleware
+app.use((req, res, next) => {
+  res.charset = 'utf-8';
+  next();
+});
+
 app.use(cors());
 app.use(express.json());
 
@@ -28,13 +35,15 @@ function getLotteryPath(lotteryId) {
 }
 
 function saveLottery(lotteryId, data) {
-  fs.writeFileSync(getLotteryPath(lotteryId), JSON.stringify(data, null, 2));
+  const json = JSON.stringify(data, null, 2);
+  fs.writeFileSync(getLotteryPath(lotteryId), json, 'utf8');
 }
 
 function loadLottery(lotteryId) {
   const filePath = getLotteryPath(lotteryId);
   if (fs.existsSync(filePath)) {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const content = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(content);
   }
   return null;
 }
@@ -56,6 +65,11 @@ function generateToken() {
 function assignGifts(participants, blacklist) {
   const n = participants.length;
   
+  // Normalize blacklist to pipe format
+  const normalizedBlacklist = blacklist.map(item => {
+    return item.replace(/→|->|—/g, '|');
+  });
+  
   // Try to find valid assignment
   for (let attempts = 0; attempts < 1000; attempts++) {
     const shuffled = [...participants].sort(() => Math.random() - 0.5);
@@ -71,10 +85,10 @@ function assignGifts(participants, blacklist) {
         break;
       }
       
-      const key = `${giver}→${receiver}`;
-      const reverseKey = `${receiver}→${giver}`;
+      const key = `${giver}|${receiver}`;
+      const reverseKey = `${receiver}|${giver}`;
       
-      if (blacklist.includes(key) || blacklist.includes(reverseKey)) {
+      if (normalizedBlacklist.includes(key) || normalizedBlacklist.includes(reverseKey)) {
         valid = false;
         break;
       }
@@ -116,12 +130,17 @@ app.post('/api/lottery', (req, res) => {
       };
     });
     
+    // Normalize blacklist to use pipe separator instead of arrow
+    const normalizedBlacklist = blacklist.map(item => {
+      return item.replace(/→|->|->|—/g, '|');
+    });
+    
     const lotteryData = {
       id: lotteryId,
       adminToken,
       participants,
       participantMap,
-      blacklist,
+      blacklist: normalizedBlacklist,
       assignments,
       createdAt: new Date().toISOString(),
       results: []
