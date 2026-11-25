@@ -56,11 +56,12 @@ http://localhost:3000
 
 3. (Opcjonalnie) Dodaj czarną listę - kto nie może wylosować kogo:
    ```
-   Mama→Tata
-   Tata→Mama
-   Ciotka→Wujek
-   Wujek→Ciotka
+   Mama|Tata
+   Tata|Mama
+   Ciotka|Wujek
+   Wujek|Ciotka
    ```
+   Obsługujemy również strzałkę: `Mama→Tata`
 
 4. Kliknij "Utworz Loterię 🎲"
 
@@ -85,15 +86,24 @@ http://localhost:3000
 
 ## Format czarnej listy
 
-Czarna lista powinna być w formacie: `Osoba1→Osoba2`
+Czarna lista powinna być w formacie: `Osoba1→Osoba2` lub `Osoba1|Osoba2`
 
 Oznacza to, że Osoba1 **nie może wylosować** Osoby2.
 
+Obsługujemy następujące separatory:
+- `→` - strzałka Unicode (lepiej dla UI)
+- `|` - pipe (lepiej dla copy-paste na różnych systemach)
+
 Przykłady:
-- `Mama→Tata` - Mama nie wylosuje Taty
+- `Mama|Tata` - Mama nie wylosuje Taty
 - `Ciotka→Wujek` - Ciotka nie wylosuje Wujka
 
 > Obsługujemy dwukierunkową czarną listę! Jeśli chcesz, żeby rodzice nie losowali się nawzajem, dodaj obie linijki:
+> ```
+> Mama|Tata
+> Tata|Mama
+> ```
+> lub
 > ```
 > Mama→Tata
 > Tata→Mama
