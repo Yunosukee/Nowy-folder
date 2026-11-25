@@ -498,6 +498,7 @@
     }
     
     function goHome() {
+      stopAdminRefresh();
       showSection('create');
       document.getElementById('participants').value = '';
       document.getElementById('blacklist').value = '';
@@ -585,6 +586,8 @@
         const revealed = data.results.filter(r => r.revealed).length;
         const pending = data.participants.length - revealed;
         
+        console.log('📊 Admin update:', revealed + '/' + data.participants.length + ' wylosowało');
+        
         document.getElementById('totalParticipants').textContent = data.participants.length;
         document.getElementById('revealedCount').textContent = revealed;
         document.getElementById('pendingCount').textContent = pending;
@@ -621,6 +624,28 @@
       }
     }
     
+    // Auto-refresh admin panel co 3 sekundy
+    let adminRefreshInterval = null;
+    function startAdminRefresh() {
+      adminRefreshInterval = setInterval(() => {
+        const params = new URLSearchParams(window.location.search);
+        const lotteryId = window.location.pathname.split('/')[2];
+        const adminToken = params.get('token');
+        
+        if (lotteryId && adminToken) {
+          console.log('🔄 Admin refresh: ' + new Date().toLocaleTimeString());
+          loadAdmin();
+        }
+      }, 3000); // Refresh co 3 sekundy
+    }
+    
+    function stopAdminRefresh() {
+      if (adminRefreshInterval) {
+        clearInterval(adminRefreshInterval);
+        adminRefreshInterval = null;
+      }
+    }
+    
     async function initReveal() {
       const params = new URLSearchParams(window.location.search);
       const lotteryId = params.get('lotteryId');
@@ -643,7 +668,7 @@
         
         showSection('reveal');
         
-        // If already revealed, show the result
+        // If already revealed, show the result immediately
         if (data.already_revealed) {
           document.getElementById('giftName').textContent = data.receiver;
           document.getElementById('revealStatus').textContent = 
@@ -685,9 +710,15 @@
     window.addEventListener('load', () => {
       if (window.location.pathname.includes('/admin/')) {
         loadAdmin();
+        startAdminRefresh(); // Start auto-refresh dla panelu admina
       } else if (window.location.search.includes('lotteryId')) {
         initReveal();
       }
+    });
+    
+    // Stop refresh gdy zamykamy okno lub zmieniamy stronę
+    window.addEventListener('beforeunload', () => {
+      stopAdminRefresh();
     });
   </script>
 </body>
