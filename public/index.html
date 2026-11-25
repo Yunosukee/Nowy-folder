@@ -659,14 +659,23 @@
       const lotteryId = params.get('lotteryId');
       const token = params.get('token');
       
-      if (!lotteryId || !token) return;
+      console.log('🔍 initReveal called with:', { lotteryId, token });
+      
+      if (!lotteryId || !token) {
+        console.log('❌ Missing lotteryId or token');
+        return;
+      }
       
       currentLotteryId = lotteryId;
       currentUserToken = token;
       
       try {
         // Check if already revealed
-        const checkRes = await fetch(`${API_BASE}/api/lottery/${lotteryId}/check/${token}`);
+        const checkUrl = `${API_BASE}/api/lottery/${lotteryId}/check/${token}`;
+        console.log('📡 Fetching:', checkUrl);
+        const checkRes = await fetch(checkUrl);
+        
+        console.log('📡 Response status:', checkRes.status);
         
         if (!checkRes.ok) {
           showError('reveal', 'Nieprawidłowy link do loterii!');
@@ -674,6 +683,7 @@
         }
         
         const checkData = await checkRes.json();
+        console.log('📊 Check data:', checkData);
         
         showSection('reveal');
         
@@ -681,18 +691,23 @@
         document.getElementById('participantName').textContent = checkData.name;
         document.getElementById('revealHeader').style.display = 'block';
         
+        console.log('✅ Already revealed?', checkData.already_revealed);
+        
         // If already revealed, show the result immediately without form
         if (checkData.already_revealed) {
+          console.log('🎁 Showing card (already revealed)');
           document.getElementById('giftName').textContent = checkData.receiver;
           document.getElementById('revealStatus').innerHTML = '';
           document.getElementById('revealForm').style.display = 'none';
           document.getElementById('revealCard').style.display = 'block';
         } else {
+          console.log('🔘 Showing form (first reveal)');
           // Show form for first reveal
           document.getElementById('revealForm').style.display = 'block';
           document.getElementById('revealCard').style.display = 'none';
         }
       } catch (err) {
+        console.error('❌ Error:', err);
         showError('reveal', 'Błąd ładowania loterii');
       }
     }
@@ -723,11 +738,19 @@
     
     // Initialize on page load
     window.addEventListener('load', () => {
+      console.log('🚀 Page loaded, URL:', window.location.href);
+      console.log('  pathname:', window.location.pathname);
+      console.log('  search:', window.location.search);
+      
       if (window.location.pathname.includes('/admin/')) {
+        console.log('→ Admin path detected');
         loadAdmin();
         startAdminRefresh(); // Start auto-refresh dla panelu admina
       } else if (window.location.search.includes('lotteryId')) {
+        console.log('→ Reveal path detected');
         initReveal();
+      } else {
+        console.log('→ No special path detected - showing create page');
       }
     });
     
