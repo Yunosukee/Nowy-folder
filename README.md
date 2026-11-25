@@ -1,15 +1,25 @@
 # 🎁 Loteria Prezentów - Secret Santa Generator
 
-Lekka, responsywna aplikacja do losowania prezentów na Święta z obsługą czarnej listy (kto nie może wylosować kogo).
+Lekka, responsywna aplikacja do losowania prezentów na Święta z obsługą czarnej listy (kto nie może wylosować kogo), admin panelem i osobnymi linkami dla każdego uczestnika.
 
 ## Funkcje
 
 ✅ **Łatwe tworzenie loterii** - Podaj imiona uczestników i czarną listę  
-✅ **Personalne linki** - Każdy uczestnik dostaje link i losuje se samodzielnie  
+✅ **Osobne linki dla każdego** - Każdy uczestnik dostaje unikalny link  
+✅ **Admin panel** - Pełny podgląd wyników i statystyk  
 ✅ **Czarna lista** - Określ, kto nie może wylosować kogo (np. rodzice nie losują się nawzajem)  
 ✅ **Zapobieganie duplikatom** - Każda osoba może wylosować tylko raz  
+✅ **Trwały zapis** - Wyniki są zapisywane w plikach JSON  
 ✅ **Responsywny design** - Działa na komórkach i desktopach  
 ✅ **Docker ready** - Gotowy do deployment'u
+
+## Nowe funkcje v2
+
+🆕 **Admin Panel** - Zarządzaj loterią, zobacz wszystkie wyniki w jednym miejscu  
+🆕 **Personalne tokeny** - Każdy uczestnik ma bezpieczny link z tokenem  
+🆕 **Zapis wyników** - Rezultaty zapisywane w plikach (przetrwają restart)  
+🆕 **UX Po Wylosowaniu** - Zamiast "już wybrane", użytkownik widzi "kupujesz dla X"  
+🆕 **Statystyka na żywo** - Admin widzi kto już wylosował  
 
 ## Jak zainstalować lokalnie
 
@@ -34,7 +44,7 @@ http://localhost:3000
 
 ### Tworzenie loterii
 
-1. Wejdź na stronę główną
+1. Wejdź na stronę główną `http://localhost:3000`
 2. Wpisz imiona uczestników (każde w nowej linii):
    ```
    Mama
@@ -49,18 +59,29 @@ http://localhost:3000
    Mama→Tata
    Tata→Mama
    Ciotka→Wujek
+   Wujek→Ciotka
    ```
 
 4. Kliknij "Utworz Loterię 🎲"
 
-5. System wygeneruje unikatowy link - wyślij go do uczestników!
+5. Otrzymasz:
+   - **Link Administracyjny** - panel do śledzenia postępów
+   - **Linki dla każdego uczestnika** - osobne linki do wysłania
 
-### Dla uczestnika
+### Dla Administratora
 
-1. Otwórz link, który dostałeś
-2. Kliknij swoje imię
+1. Otwórz link administracyjny (chronionym tokenem)
+2. Widzisz:
+   - 📊 Statystykę: ile osób już wylosowało
+   - 👥 Wyniki: kto dla kogo kupuje prezent
+   - 🔗 Linki: wszystkie linki do wysłania uczestnikom
+
+### Dla Uczestnika
+
+1. Otwórz link, który dostałeś od administratora
+2. Kliknij "Pokaż Mi Mój Prezent 🎲"
 3. Dowiedz się, komu kupujesz prezent 🎁
-4. **Każdy może wylosować tylko raz!**
+4. Po wylosowaniu zawsze widzi wynik
 
 ## Format czarnej listy
 
@@ -77,6 +98,21 @@ Przykłady:
 > Mama→Tata
 > Tata→Mama
 > ```
+
+## Struktura plików
+
+```
+gift-lottery/
+├── server.js              # Backend Express + logika losowania
+├── package.json           # Zależności
+├── public/
+│   └── index.html        # Frontend SPA (single page app)
+├── data/                 # Folder z zapisanymi loteriami (JSON)
+├── Dockerfile            # Gotowy do dockeryzacji
+├── docker-compose.yml    # Docker orchestration
+├── README.md             # Dokumentacja
+└── .gitignore            # Git config
+```
 
 ## Deployment na Dockerze
 
@@ -132,19 +168,47 @@ Tworzy nową loterię
 ```json
 {
   "lotteryId": "abc123",
-  "link": "http://localhost:3000/lottery/abc123"
+  "adminToken": "token_1234...",
+  "adminLink": "http://localhost:3000/admin/abc123?token=token_1234...",
+  "participantLinks": [
+    {
+      "name": "Mama",
+      "link": "http://localhost:3000/reveal?lotteryId=abc123&token=..."
+    }
+  ]
 }
 ```
 
-### GET `/api/lottery/:id`
-Pobiera informacje o loterii
+### GET `/api/lottery/:id/admin?token=TOKEN`
+Pobiera panel administracyjny (wymaga token)
 
 **Response:**
 ```json
 {
+  "id": "abc123",
   "participants": ["Mama", "Tata", "Babcia"],
-  "revealedCount": 1,
-  "totalCount": 3
+  "results": [
+    {
+      "name": "Mama",
+      "receiver": "Babcia",
+      "revealed": true,
+      "revealedAt": "2026-11-25T21:30:00Z"
+    }
+  ]
+}
+```
+
+### GET `/api/lottery/:id/participant/:token`
+Pobiera info o uczestnik (przed/po wylosowaniu)
+
+**Response:**
+```json
+{
+  "name": "Mama",
+  "already_revealed": true,
+  "receiver": "Babcia",
+  "totalParticipants": 3,
+  "participantsRevealed": 1
 }
 ```
 
@@ -154,7 +218,7 @@ Ujawnia prezent dla uczestnika
 **Request:**
 ```json
 {
-  "participant": "Mama"
+  "token": "participant_token_1234..."
 }
 ```
 
@@ -171,6 +235,7 @@ Ujawnia prezent dla uczestnika
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
 - **Backend**: Node.js, Express.js
+- **Storage**: JSON files (data/)
 - **Deployment**: Docker
 
 ## Licencja
@@ -180,9 +245,11 @@ MIT
 ## Pomysły na ulepszenia
 
 - 📧 Wysyłanie linków mailami
-- 💾 Trwały storage (baza danych)
-- 🎨 Więcej tematów
+- 💾 Baza danych (MongoDB/PostgreSQL) zamiast JSON
+- 🎨 Więcej tematów i efektów
 - 🌍 Więcej języków
-- 👥 Zarządzanie wieloma loteriami
+- 👥 Zarządzanie wieloma loteriami jednocześnie
+- 📊 Eksport wyników do PDF/Excel
 
 Zabawy! 🎉
+

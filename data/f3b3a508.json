@@ -1,0 +1,43 @@
+{
+  "id": "f3b3a508",
+  "adminToken": "dc3f7161ec7878540d1f9d7f3c55dbff",
+  "participants": [
+    "Mama",
+    "Tata",
+    "Babcia"
+  ],
+  "participantMap": {
+    "Mama": {
+      "token": "a44888276d101d97ebbd2a93b0e60ccf",
+      "revealed": true,
+      "revealedAt": "2026-11-25T20:36:13.648Z"
+    },
+    "Tata": {
+      "token": "242b0aecce792e59658326b03bfcf338",
+      "revealed": false,
+      "revealedAt": null
+    },
+    "Babcia": {
+      "token": "f9e9e0f37feb133dc3e9e93adeb3d908",
+      "revealed": false,
+      "revealedAt": null
+    }
+  },
+  "blacklist": [
+    "Mama?Tata",
+    "Tata?Mama"
+  ],
+  "assignments": {
+    "Mama": "Babcia",
+    "Tata": "Mama",
+    "Babcia": "Tata"
+  },
+  "createdAt": "2026-11-25T20:36:13.632Z",
+  "results": [
+    {
+      "giver": "Mama",
+      "receiver": "Babcia",
+      "revealedAt": "2026-11-25T20:36:13.648Z"
+    }
+  ]
+}
